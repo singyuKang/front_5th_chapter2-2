@@ -26,7 +26,15 @@ export const useCart = () => {
 
   const removeFromCart = (productId: string) => {};
 
-  const updateQuantity = (productId: string, newQuantity: number) => {};
+  const updateQuantity = (productId: string, newQuantity: number) => {
+    //prevCart내부에 productId가 무조건 있을거라고 가정
+    setCart((prevCart) => {
+      const updatedItem = prevCart.map((cartItem) =>
+        cartItem.product.id === productId ? { ...cartItem, quantity: newQuantity } : cartItem,
+      );
+      return updatedItem;
+    });
+  };
 
   const applyCoupon = (coupon: Coupon) => {};
 
