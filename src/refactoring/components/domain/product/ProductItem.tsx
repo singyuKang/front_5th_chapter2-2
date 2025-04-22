@@ -1,20 +1,15 @@
 import React from 'react';
 import { Product } from '../../../../types';
 import Button from '../../common/Button';
+import { caculateMaxDiscount } from '../../../models/cart';
 
 type ProductItemProps = {
   product: Product;
   remainingStock: number;
   onAddToCart: (product: Product) => void;
-  getMaxDiscount: (discounts: { quantity: number; rate: number }[]) => number;
 };
 
-const ProductItem: React.FC<ProductItemProps> = ({
-  product,
-  remainingStock,
-  onAddToCart,
-  getMaxDiscount,
-}) => {
+const ProductItem: React.FC<ProductItemProps> = ({ product, remainingStock, onAddToCart }) => {
   return (
     <div data-testid={`product-${product.id}`} className="bg-white p-3 rounded shadow">
       <div className="flex justify-between items-center mb-2">
@@ -27,7 +22,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         </span>
         {product.discounts.length > 0 && (
           <span className="ml-2 font-medium text-blue-600">
-            최대 {(getMaxDiscount(product.discounts) * 100).toFixed(0)}% 할인
+            최대 {(caculateMaxDiscount(product.discounts) * 100).toFixed(0)}% 할인
           </span>
         )}
       </div>

@@ -5,16 +5,10 @@ import ProductItem from './ProductItem';
 type ProductListProps = {
   products: Product[];
   getRemainingStock: (product: Product) => number;
-  getMaxDiscount: (discounts: { quantity: number; rate: number }[]) => number;
   onAddToCart: (product: Product) => void;
 };
 
-const ProductList: React.FC<ProductListProps> = ({
-  products,
-  getRemainingStock,
-  getMaxDiscount,
-  onAddToCart,
-}) => {
+const ProductList: React.FC<ProductListProps> = ({ products, getRemainingStock, onAddToCart }) => {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">상품 목록</h2>
@@ -24,7 +18,6 @@ const ProductList: React.FC<ProductListProps> = ({
             key={product.id}
             product={product}
             remainingStock={getRemainingStock(product)}
-            getMaxDiscount={getMaxDiscount}
             onAddToCart={onAddToCart}
           />
         ))}
