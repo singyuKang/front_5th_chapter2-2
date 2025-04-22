@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Coupon, Discount, Product } from '../../types.ts';
+import Button from '../components/common/Button.tsx';
 
 interface Props {
   products: Product[];
@@ -136,12 +137,12 @@ export const AdminPage = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h2 className="text-2xl font-semibold mb-4">상품 관리</h2>
-          <button
+          <Button
             onClick={() => setShowNewProductForm(!showNewProductForm)}
             className="bg-green-500 text-white px-4 py-2 rounded mb-4 hover:bg-green-600"
           >
             {showNewProductForm ? '취소' : '새 상품 추가'}
-          </button>
+          </Button>
           {showNewProductForm && (
             <div className="bg-white p-4 rounded shadow mb-4">
               <h3 className="text-xl font-semibold mb-2">새 상품 추가</h3>
@@ -185,12 +186,13 @@ export const AdminPage = ({
                   className="w-full p-2 border rounded"
                 />
               </div>
-              <button
-                onClick={handleAddNewProduct}
+              <Button
+                onClick={() => handleAddNewProduct()}
                 className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                variant="secondary"
               >
                 추가
-              </button>
+              </Button>
             </div>
           )}
           <div className="space-y-2">
@@ -200,13 +202,14 @@ export const AdminPage = ({
                 data-testid={`product-${index + 1}`}
                 className="bg-white p-4 rounded shadow"
               >
-                <button
-                  data-testid="toggle-button"
+                <Button
+                  dataTestId="toggle-button"
                   onClick={() => toggleProductAccordion(product.id)}
-                  className="w-full text-left font-semibold"
+                  className="w-full text-left font-semibold px-0"
+                  variant="default"
                 >
                   {product.name} - {product.price}원 (재고: {product.stock})
-                </button>
+                </Button>
                 {openProductIds.has(product.id) && (
                   <div className="mt-2">
                     {editingProduct && editingProduct.id === product.id ? (
@@ -250,12 +253,13 @@ export const AdminPage = ({
                               <span>
                                 {discount.quantity}개 이상 구매 시 {discount.rate * 100}% 할인
                               </span>
-                              <button
+                              <Button
                                 onClick={() => handleRemoveDiscount(product.id, index)}
                                 className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                                variant="default"
                               >
                                 삭제
-                              </button>
+                              </Button>
                             </div>
                           ))}
                           <div className="flex space-x-2">
@@ -283,20 +287,22 @@ export const AdminPage = ({
                               }
                               className="w-1/3 p-2 border rounded"
                             />
-                            <button
+                            <Button
                               onClick={() => handleAddDiscount(product.id)}
                               className="w-1/3 bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                              variant="default"
                             >
                               할인 추가
-                            </button>
+                            </Button>
                           </div>
                         </div>
-                        <button
-                          onClick={handleEditComplete}
+                        <Button
+                          onClick={() => handleEditComplete()}
                           className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 mt-2"
+                          variant="default"
                         >
                           수정 완료
-                        </button>
+                        </Button>
                       </div>
                     ) : (
                       <div>
@@ -307,13 +313,14 @@ export const AdminPage = ({
                             </span>
                           </div>
                         ))}
-                        <button
-                          data-testid="modify-button"
+                        <Button
+                          dataTestId="modify-button"
                           onClick={() => handleEditProduct(product)}
                           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 mt-2"
+                          variant="default"
                         >
                           수정
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>

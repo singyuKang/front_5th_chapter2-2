@@ -1,5 +1,6 @@
 import React from 'react';
 import { CartItem as CartItemType } from '../../../../types';
+import Button from '../../common/Button';
 
 type CartItemProps = {
   item: CartItemType;
@@ -29,24 +30,25 @@ const CartItem: React.FC<CartItemProps> = ({
         </span>
       </div>
       <div>
-        <button
+        <Button
           onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
-          className="bg-gray-300 text-gray-800 px-2 py-1 rounded mr-1 hover:bg-gray-400"
+          className="bg-gray-300 text-gray-800 px-2 py-1.5 rounded mr-1 hover:bg-gray-400"
         >
           -
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
-          className="bg-gray-300 text-gray-800 px-2 py-1 rounded mr-1 hover:bg-gray-400"
+          className="bg-gray-300 text-gray-800 px-2 py-1.5 mr-1 hover:bg-gray-400"
         >
           +
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => onRemoveFromCart(item.product.id)}
-          className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+          variant="danger"
+          className="px-2 py-1.5"
         >
           삭제
-        </button>
+        </Button>
       </div>
     </div>
   );
