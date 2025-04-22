@@ -1,20 +1,15 @@
 import React from 'react';
 import { CartItem as CartItemType } from '../../../../types';
 import CartItem from './CartItem';
+import { getAppliedDiscount } from '../../../models/cart';
 
 type CartListProps = {
   cart: CartItemType[];
-  getAppliedDiscount: (item: CartItemType) => number;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveFromCart: (productId: string) => void;
 };
 
-const CartList: React.FC<CartListProps> = ({
-  cart,
-  getAppliedDiscount,
-  onUpdateQuantity,
-  onRemoveFromCart,
-}) => {
+const CartList: React.FC<CartListProps> = ({ cart, onUpdateQuantity, onRemoveFromCart }) => {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">장바구니 내역</h2>
