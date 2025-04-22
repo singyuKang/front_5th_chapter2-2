@@ -1,14 +1,15 @@
 import React from 'react';
-import { Product } from '../../../../types';
+import { Product, CartItem } from '../../../../types';
 import ProductItem from './ProductItem';
+import { calculateRemainingStock } from '../../../models/cart';
 
 type ProductListProps = {
   products: Product[];
-  getRemainingStock: (product: Product) => number;
+  cart: CartItem[];
   onAddToCart: (product: Product) => void;
 };
 
-const ProductList: React.FC<ProductListProps> = ({ products, getRemainingStock, onAddToCart }) => {
+const ProductList: React.FC<ProductListProps> = ({ products, cart, onAddToCart }) => {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">상품 목록</h2>
@@ -17,7 +18,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, getRemainingStock, 
           <ProductItem
             key={product.id}
             product={product}
-            remainingStock={getRemainingStock(product)}
+            remainingStock={calculateRemainingStock(product, cart)}
             onAddToCart={onAddToCart}
           />
         ))}

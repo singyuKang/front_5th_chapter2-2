@@ -86,7 +86,7 @@ export const caculateMaxDiscount = (discounts: { quantity: number; rate: number 
   return discounts.reduce((max, discount) => Math.max(max, discount.rate), 0);
 };
 
-export const calculateRemainingStock = (product: Product, cart: CartItem[]) => {
+export const calculateRemainingStock = (product: Product, cart: CartItem[] = []) => {
   const cartItem = cart.find((item) => item.product.id === product.id);
   return product.stock - (cartItem?.quantity || 0);
 };
