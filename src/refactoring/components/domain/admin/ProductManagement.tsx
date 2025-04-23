@@ -3,6 +3,7 @@ import { Discount, Product } from '../../../../types';
 import Button from '../../common/Button';
 import ProductForm from './product/ProductForm';
 import ProductList from './product/ProductList';
+import { useProductForm } from '../../../hooks/useProductForm';
 
 type ProductManagementProps = {
   products: Product[];
@@ -16,27 +17,17 @@ const ProductManagement: React.FC<ProductManagementProps> = ({
   onProductAdd,
 }) => {
   const [openProductIds, setOpenProductIds] = useState<Set<string>>(new Set());
-  const [showNewProductForm, setShowNewProductForm] = useState(false);
-  const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
-    name: '',
-    price: 0,
-    stock: 0,
-    discounts: [],
-  });
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [newDiscount, setNewDiscount] = useState<Discount>({ quantity: 0, rate: 0 });
 
-  const handleAddNewProduct = () => {
-    const productWithId = { ...newProduct, id: Date.now().toString() };
-    onProductAdd(productWithId);
-    setNewProduct({
-      name: '',
-      price: 0,
-      stock: 0,
-      discounts: [],
-    });
-    setShowNewProductForm(false);
-  };
+  // 상품 추가 관련 훅
+  const {
+    newProduct,
+    setNewProduct,
+    showNewProductForm,
+    toggleNewProductForm,
+    handleAddNewProduct,
+  } = useProductForm({ onProductAdd });
 
   const toggleProductAccordion = (productId: string) => {
     setOpenProductIds((prev) => {
@@ -117,7 +108,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({
     <div>
       <h2 className="text-2xl font-semibold mb-4">상품 관리</h2>
       <Button
-        onClick={() => setShowNewProductForm(!showNewProductForm)}
+        onClick={toggleNewProductForm}
         className="bg-green-500 text-white px-4 py-2 rounded mb-4 hover:bg-green-600"
       >
         {showNewProductForm ? '취소' : '새 상품 추가'}
