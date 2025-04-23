@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Coupon } from '../../../../../types';
 import Button from '../../../common/Button';
 import { useCouponForm } from '../../../../hooks/useCouponForm';
