@@ -237,20 +237,50 @@ describe('advanced > ', () => {
         price: 10000,
         stock: 5,
         discounts: [
-          { quantity: 2, rate: 0.1 }, // 2개 이상 구매 시 10% 할인
-          { quantity: 3, rate: 0.2 }, // 3개 이상 구매 시 20% 할인
+          { quantity: 2, rate: 0.1 },
+          { quantity: 3, rate: 0.2 },
         ],
       };
+
+      const mockProduct2: Product = {
+        id: 'prod-2',
+        name: '할인 없는 상품',
+        price: 5000,
+        stock: 10,
+        discounts: [],
+      };
+
+      const mockCart: CartItem[] = [{ product: mockProduct1, quantity: 2 }];
 
       describe('caculateMaxDiscount 테스트', () => {
         test('최대 할인율을 올바르게 계산해야 함', () => {
           const result = caculateMaxDiscount(mockProduct1.discounts);
-          expect(result).toBe(0.2); // 가장 큰 할인율인 20%를 반환해야 함
+          // 가장 큰 할인율 20% 반환
+          expect(result).toBe(0.2);
         });
 
         test('할인이 없는 경우 0을 반환해야 함', () => {
           const result = caculateMaxDiscount([]);
           expect(result).toBe(0);
+        });
+      });
+
+      describe('calculateRemainingStock 테스트', () => {
+        test('장바구니에 담긴 상품의 남은 재고를 올바르게 계산해야 함', () => {
+          const result = calculateRemainingStock(mockProduct1, mockCart);
+          // 초기 재고 5개에서 장바구니에 2개 담겨 있으므로 3개 남음
+          expect(result).toBe(3);
+        });
+
+        test('장바구니에 없는 상품의 경우 전체 재고를 반환해야 함', () => {
+          const result = calculateRemainingStock(mockProduct2, mockCart);
+          // 장바구니에 없으므로 전체 재고 10개 반환
+          expect(result).toBe(10);
+        });
+
+        test('빈 장바구니가 전달되면 전체 재고를 반환해야 함', () => {
+          const result = calculateRemainingStock(mockProduct1, []);
+          expect(result).toBe(5);
         });
       });
     });
