@@ -50,6 +50,10 @@ export function useProductList({ products, onProductUpdate }: UseProductListProp
   };
 
   const handleAddDiscount = (productId: string) => {
+    if (!validateForm(newDiscount)) {
+      return;
+    }
+
     if (editingProduct && editingProduct.id === productId) {
       const updatedProduct = {
         ...editingProduct,
@@ -59,6 +63,20 @@ export function useProductList({ products, onProductUpdate }: UseProductListProp
       setEditingProduct(updatedProduct);
       setNewDiscount({ quantity: 0, rate: 0 });
     }
+  };
+
+  const validateForm = (newDiscount: Discount): boolean => {
+    let isValid = true;
+
+    if (newDiscount.quantity <= 0) {
+      isValid = false;
+    }
+
+    if (newDiscount.rate <= 0) {
+      isValid = false;
+    }
+
+    return isValid;
   };
 
   const handleRemoveDiscount = (productId: string, index: number) => {
