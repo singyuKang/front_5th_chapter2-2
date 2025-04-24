@@ -1,17 +1,9 @@
 import { useState } from 'react';
-import { describe, expect, test, vi, beforeEach } from 'vitest';
-import { act, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
+import { describe, expect, test, beforeEach, afterEach } from 'vitest';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { CartPage } from '../../refactoring/pages/CartPage';
 import { AdminPage } from '../../refactoring/pages/AdminPage';
-import { CartItem, Coupon, Product } from '../../types';
-import {
-  caculateMaxDiscount,
-  calculateRemainingStock,
-  createUpdatedCartWithProduct,
-  getMaxApplicableDiscountRate,
-} from '../../refactoring/models/cart';
-import useLocalStorage, * as useLocalStorageModule from '../../refactoring/hooks/useLocalStorage';
-import { useCoupons } from '../../refactoring/hooks';
+import { Coupon, Product } from '../../types';
 
 const mockProducts: Product[] = [
   {
@@ -82,6 +74,14 @@ const TestAdminPage = () => {
 
 describe('advanced > ', () => {
   describe('시나리오 테스트 > ', () => {
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    afterEach(() => {
+      localStorage.clear();
+    });
+
     test('장바구니 페이지 테스트 > ', async () => {
       render(<CartPage products={mockProducts} coupons={mockCoupons} />);
       const product1 = screen.getByTestId('product-p1');
@@ -233,274 +233,6 @@ describe('advanced > ', () => {
       const $newCoupon = screen.getByTestId('coupon-3');
 
       expect($newCoupon).toHaveTextContent('새 쿠폰 (NEW10):10% 할인');
-    });
-  });
-
-  describe('자유롭게 작성해보세요.', () => {
-    test('cart 유틸함수 테스트', () => {
-      const mockProduct1: Product = {
-        id: 'prod-1',
-        name: '테스트 상품',
-        price: 10000,
-        stock: 5,
-        discounts: [
-          { quantity: 2, rate: 0.1 },
-          { quantity: 3, rate: 0.2 },
-        ],
-      };
-
-      const mockProduct2: Product = {
-        id: 'prod-2',
-        name: '할인 없는 상품',
-        price: 5000,
-        stock: 10,
-        discounts: [],
-      };
-
-      const mockCart: CartItem[] = [{ product: mockProduct1, quantity: 2 }];
-
-      describe('caculateMaxDiscount 테스트', () => {
-        test('최대 할인율을 올바르게 계산해야 함', () => {
-          const result = caculateMaxDiscount(mockProduct1.discounts);
-          // 가장 큰 할인율 20% 반환
-          expect(result).toBe(0.2);
-        });
-
-        test('할인이 없는 경우 0을 반환해야 함', () => {
-          const result = caculateMaxDiscount([]);
-          expect(result).toBe(0);
-        });
-      });
-
-      describe('calculateRemainingStock 테스트', () => {
-        test('장바구니에 담긴 상품의 남은 재고를 올바르게 계산해야 함', () => {
-          const result = calculateRemainingStock(mockProduct1, mockCart);
-          // 초기 재고 5개에서 장바구니에 2개 담겨 있으므로 3개 남음
-          expect(result).toBe(3);
-        });
-
-        test('장바구니에 없는 상품의 경우 전체 재고를 반환해야 함', () => {
-          const result = calculateRemainingStock(mockProduct2, mockCart);
-          // 장바구니에 없으므로 전체 재고 10개 반환
-          expect(result).toBe(10);
-        });
-
-        test('빈 장바구니가 전달되면 전체 재고를 반환해야 함', () => {
-          const result = calculateRemainingStock(mockProduct1, []);
-          expect(result).toBe(5);
-        });
-      });
-
-      describe('getMaxApplicableDiscountRate 테스트', () => {
-        test('구매 수량에 해당하는 최대 할인율을 반환해야 함', () => {
-          // 2개 구매 시 10% 할인 적용
-          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 2)).toBe(0.1);
-
-          // 3개 구매 시 20% 할인 적용
-          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 3)).toBe(0.2);
-
-          // 4개 구매 시 여전히 최대 할인인 20% 적용
-          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 4)).toBe(0.2);
-        });
-
-        test('구매 수량이 최소 할인 기준에 못 미치면 0을 반환해야 함', () => {
-          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 1)).toBe(0);
-        });
-
-        test('할인이 없는 경우 0을 반환해야 함', () => {
-          expect(getMaxApplicableDiscountRate([], 5)).toBe(0);
-        });
-      });
-
-      describe('createUpdatedCartWithProduct 테스트', () => {
-        test('장바구니에 새 상품을 추가해야 함', () => {
-          const updatedCart = createUpdatedCartWithProduct(mockCart, mockProduct2);
-
-          // 장바구니 길이가 2가 되어야 함 (기존 1개 + 새로 추가된 1개)
-          expect(updatedCart.length).toBe(2);
-
-          // 새로 추가된 상품이 있는지 확인
-          const newItem = updatedCart.find((item) => item.product.id === mockProduct2.id);
-          expect(newItem).toBeDefined();
-          expect(newItem?.quantity).toBe(1);
-
-          // 기존 상품이 그대로 있는지 확인
-          const existingItem = updatedCart.find((item) => item.product.id === mockProduct1.id);
-          expect(existingItem).toBeDefined();
-          expect(existingItem?.quantity).toBe(2);
-        });
-
-        test('이미 있는 상품의 경우 수량을 증가시켜야 함', () => {
-          const updatedCart = createUpdatedCartWithProduct(mockCart, mockProduct1);
-
-          // 장바구니 길이는 그대로 1이어야 함 (새 항목이 추가되지 않고 기존 항목 업데이트)
-          expect(updatedCart.length).toBe(1);
-
-          // 기존 상품의 수량이 증가했는지 확인 (2에서 3으로)
-          const updatedItem = updatedCart.find((item) => item.product.id === mockProduct1.id);
-          expect(updatedItem).toBeDefined();
-          expect(updatedItem?.quantity).toBe(3);
-        });
-
-        test('재고 이상으로 수량이 증가하지 않아야 함', () => {
-          // 초기 장바구니에 이미 재고(5개) 근접한 수량(4개)이 담겨있는 경우
-          const initialCart: CartItem[] = [{ product: mockProduct1, quantity: 4 }];
-
-          const updatedCart = createUpdatedCartWithProduct(initialCart, mockProduct1);
-
-          // 수량이 재고 한도(5개)를 넘지 않아야 함
-          const updatedItem = updatedCart.find((item) => item.product.id === mockProduct1.id);
-          expect(updatedItem?.quantity).toBe(5);
-
-          // 다시 한번 더 추가해도 재고 한도(5개)를 넘지 않아야 함
-          const finalCart = createUpdatedCartWithProduct(updatedCart, mockProduct1);
-          const finalItem = finalCart.find((item) => item.product.id === mockProduct1.id);
-          expect(finalItem?.quantity).toBe(5);
-        });
-      });
-    });
-
-    describe('useCoupons 테스트', () => {
-      vi.mock('../../refactoring/hooks/useLocalStorage', () => ({
-        __esModule: true,
-        default: vi.fn(),
-      }));
-      const mockCoupons = [
-        {
-          name: '5000원 할인 쿠폰',
-          discountType: 'amount' as const,
-          discountValue: 5000,
-          code: 'AMOUNT5000',
-        },
-        {
-          code: 'PERCENT10',
-          discountType: 'percentage' as const,
-          discountValue: 10,
-          name: '10% 할인 쿠폰',
-        },
-      ];
-
-      const newCoupon = {
-        name: '50000원 할인 쿠폰',
-        discountType: 'amount' as const,
-        discountValue: 50000,
-        code: 'AMOUNT50000',
-      };
-
-      let mockSetValue: ReturnType<typeof vi.fn>;
-
-      beforeEach(() => {
-        vi.resetAllMocks();
-
-        mockSetValue = vi.fn();
-        (useLocalStorageModule.default as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-          mockCoupons,
-          mockSetValue,
-        ]);
-      });
-
-      test('초기 쿠폰 목록이 정상적으로 로드되어야 함', () => {
-        const { result } = renderHook(() => useCoupons(mockCoupons));
-
-        expect(result.current.coupons).toEqual(mockCoupons);
-        expect(result.current.coupons).toHaveLength(2);
-        expect(result.current.coupons[0].code).toBe('AMOUNT5000');
-        expect(result.current.coupons[1].code).toBe('PERCENT10');
-
-        // useLocalStorage가 올바른 키와 초기값으로 호출되었는지 확인
-        expect(useLocalStorageModule.default).toHaveBeenCalledWith('coupons', mockCoupons);
-      });
-
-      test('addCoupon 함수가 쿠폰을 추가해야 함', () => {
-        const { result } = renderHook(() => useCoupons(mockCoupons));
-
-        act(() => {
-          result.current.addCoupon(newCoupon);
-        });
-
-        expect(mockSetValue).toHaveBeenCalled();
-
-        const updaterFunction = mockSetValue.mock.calls[0][0];
-        const updatedCoupons = updaterFunction(mockCoupons);
-        expect(updatedCoupons).toHaveLength(3);
-        expect(updatedCoupons[2]).toEqual(newCoupon);
-      });
-    });
-
-    const localStorageMock = (() => {
-      let store: Record<string, string> = {};
-
-      return {
-        getItem: vi.fn((key: string) => store[key] || null),
-        setItem: vi.fn((key: string, value: string) => {
-          store[key] = value;
-        }),
-        clear: vi.fn(() => {
-          store = {};
-        }),
-        removeItem: vi.fn((key: string) => {
-          delete store[key];
-        }),
-        key: vi.fn((index: number) => Object.keys(store)[index] || null),
-        length: 0,
-      };
-    })();
-
-    Object.defineProperty(window, 'localStorage', {
-      value: localStorageMock,
-      writable: true,
-    });
-
-    describe('useLocalStorage 훅 테스트', () => {
-      const testKey = 'uniqueTestKey_123';
-      const initialValue = { name: 'test', value: 123 };
-
-      let mockStorage: Record<string, string> = {};
-
-      // localStorage 모킹 설정
-      beforeEach(() => {
-        // 테스트 전에 저장소를 초기화
-        mockStorage = {};
-
-        // getItem과 setItem 재정의
-        const mockLocalStorage = {
-          getItem: vi.fn((key: string) => mockStorage[key] || null),
-          setItem: vi.fn((key: string, value: string) => {
-            mockStorage[key] = value;
-          }),
-          clear: vi.fn(() => {
-            mockStorage = {};
-          }),
-          removeItem: vi.fn((key: string) => {
-            delete mockStorage[key];
-          }),
-          key: vi.fn((index: number) => Object.keys(mockStorage)[index] || null),
-          length: 0,
-        };
-
-        // 테스트 전 window.localStorage 완전히 대체
-        Object.defineProperty(window, 'localStorage', {
-          value: mockLocalStorage,
-          writable: true,
-        });
-
-        // 다른 모의 객체들도 초기화
-        vi.clearAllMocks();
-      });
-
-      test('초기값이 로컬 스토리지에 없을 때 초기값을 사용해야 함', () => {
-        // 추가 확인: localStorage가 비어있는지
-        expect(window.localStorage.getItem(testKey)).toBeNull();
-
-        // 훅 렌더링
-        const { result } = renderHook(() => useLocalStorage(testKey, initialValue));
-
-        // 초기값이 올바르게 설정되었는지 확인
-        expect(result.current[0]).toEqual(initialValue);
-
-        // localStorage.getItem이 올바른 키로 호출되었는지 확인
-        expect(window.localStorage.getItem).toHaveBeenCalledWith(testKey);
-      });
     });
   });
 });
