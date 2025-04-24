@@ -1,4 +1,5 @@
 import React from 'react';
+import Heading from '../../common/Heading';
 
 type OrderSummaryProps = {
   totalBeforeDiscount: number;
@@ -13,7 +14,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 }) => {
   return (
     <div className="mt-6 bg-white p-4 rounded shadow">
-      <h2 className="text-2xl font-semibold mb-2">주문 요약</h2>
+      <Heading as="h2" className="text-2xl font-semibold mb-4">
+        주문 요약
+      </Heading>
       <div className="space-y-1">
         <p>상품 금액: {totalBeforeDiscount.toLocaleString()}원</p>
         <p className="text-green-600">할인 금액: {totalDiscount.toLocaleString()}원</p>

@@ -1,4 +1,5 @@
 import { Coupon, Product } from '../../types.ts';
+import Heading from '../components/common/Heading.tsx';
 import CouponManagement from '../components/domain/admin/CouponManagement.tsx';
 import ProductManagement from '../components/domain/admin/ProductManagement.tsx';
 
@@ -19,7 +20,9 @@ export const AdminPage = ({
 }: Props) => {
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">관리자 페이지</h1>
+      <Heading as="h1" className="text-3xl font-bold mb-6">
+        관리자 페이지
+      </Heading>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ProductManagement
           products={products}

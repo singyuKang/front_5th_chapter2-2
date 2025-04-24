@@ -5,6 +5,7 @@ import ProductForm from './product/ProductForm';
 import ProductList from './product/ProductList';
 import { useProductForm } from '../../../hooks/useProductForm';
 import { useProductList } from '../../../hooks/useProductList';
+import Heading from '../../common/Heading';
 
 type ProductManagementProps = {
   products: Product[];
@@ -44,7 +45,9 @@ const ProductManagement: React.FC<ProductManagementProps> = ({
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">상품 관리</h2>
+      <Heading as="h2" className="text-2xl font-semibold mb-4">
+        상품 관리
+      </Heading>
       <Button
         onClick={toggleNewProductForm}
         className="bg-green-500 text-white px-4 py-2 rounded mb-4 hover:bg-green-600"
