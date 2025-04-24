@@ -20,6 +20,10 @@ export function useProductForm({ onProductAdd }: UseProductFormProps) {
   };
 
   const handleAddNewProduct = () => {
+    if (!validateForm()) {
+      return;
+    }
+
     const productWithId = { ...newProduct, id: Date.now().toString() };
     onProductAdd(productWithId);
     setNewProduct({
@@ -30,6 +34,27 @@ export function useProductForm({ onProductAdd }: UseProductFormProps) {
     });
     setShowNewProductForm(false);
     return productWithId;
+  };
+
+  const validateForm = (): boolean => {
+    let isValid = true;
+
+    // 상품명
+    if (!newProduct.name.trim()) {
+      isValid = false;
+    }
+
+    // 상품가격
+    if (newProduct.price <= 0) {
+      isValid = false;
+    }
+
+    // 상품 갯수
+    if (newProduct.stock <= 0) {
+      isValid = false;
+    }
+
+    return isValid;
   };
 
   return {
