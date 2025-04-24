@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { describe, expect, test } from 'vitest';
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { describe, expect, test, vi, beforeEach, MockInstance } from 'vitest';
+import { act, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
 import { CartPage } from '../../refactoring/pages/CartPage';
 import { AdminPage } from '../../refactoring/pages/AdminPage';
 import { CartItem, Coupon, Product } from '../../types';
@@ -10,6 +10,8 @@ import {
   createUpdatedCartWithProduct,
   getMaxApplicableDiscountRate,
 } from '../../refactoring/models/cart';
+import * as useLocalStorageModule from '../../refactoring/hooks/useLocalStorage';
+import { useCoupons } from '../../refactoring/hooks';
 
 const mockProducts: Product[] = [
   {
@@ -235,7 +237,7 @@ describe('advanced > ', () => {
   });
 
   describe('자유롭게 작성해보세요.', () => {
-    test('cart.ts 유틸함수 테스트', () => {
+    test('cart 유틸함수 테스트', () => {
       const mockProduct1: Product = {
         id: 'prod-1',
         name: '테스트 상품',
@@ -358,8 +360,76 @@ describe('advanced > ', () => {
       });
     });
 
-    test('새로운 hook 함수르 만든 후에 테스트 코드를 작성해서 실행해보세요', () => {
-      expect(true).toBe(false);
+    vi.mock('../../refactoring/hooks/useLocalStorage', () => ({
+      default: vi.fn(),
+    }));
+
+    vi.mock('../../refactoring/hooks/useLocalStorage', () => ({
+      __esModule: true,
+      default: vi.fn(),
+    }));
+
+    describe('useCoupons 테스트', () => {
+      const mockCoupons = [
+        {
+          name: '5000원 할인 쿠폰',
+          discountType: 'amount' as const,
+          discountValue: 5000,
+          code: 'AMOUNT5000',
+        },
+        {
+          code: 'PERCENT10',
+          discountType: 'percentage' as const,
+          discountValue: 10,
+          name: '10% 할인 쿠폰',
+        },
+      ];
+
+      const newCoupon = {
+        name: '50000원 할인 쿠폰',
+        discountType: 'amount' as const,
+        discountValue: 50000,
+        code: 'AMOUNT50000',
+      };
+
+      let mockSetValue: ReturnType<typeof vi.fn>;
+
+      beforeEach(() => {
+        vi.resetAllMocks();
+
+        mockSetValue = vi.fn();
+        (useLocalStorageModule.default as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+          mockCoupons,
+          mockSetValue,
+        ]);
+      });
+
+      test('초기 쿠폰 목록이 정상적으로 로드되어야 함', () => {
+        const { result } = renderHook(() => useCoupons(mockCoupons));
+
+        expect(result.current.coupons).toEqual(mockCoupons);
+        expect(result.current.coupons).toHaveLength(2);
+        expect(result.current.coupons[0].code).toBe('AMOUNT5000');
+        expect(result.current.coupons[1].code).toBe('PERCENT10');
+
+        // useLocalStorage가 올바른 키와 초기값으로 호출되었는지 확인
+        expect(useLocalStorageModule.default).toHaveBeenCalledWith('coupons', mockCoupons);
+      });
+
+      test('addCoupon 함수가 쿠폰을 추가해야 함', () => {
+        const { result } = renderHook(() => useCoupons(mockCoupons));
+
+        act(() => {
+          result.current.addCoupon(newCoupon);
+        });
+
+        expect(mockSetValue).toHaveBeenCalled();
+
+        const updaterFunction = mockSetValue.mock.calls[0][0];
+        const updatedCoupons = updaterFunction(mockCoupons);
+        expect(updatedCoupons).toHaveLength(3);
+        expect(updatedCoupons[2]).toEqual(newCoupon);
+      });
     });
   });
 });
