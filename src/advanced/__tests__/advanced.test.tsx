@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { describe, expect, test, vi, beforeEach, MockInstance } from 'vitest';
+import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { act, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
 import { CartPage } from '../../refactoring/pages/CartPage';
 import { AdminPage } from '../../refactoring/pages/AdminPage';
@@ -10,7 +10,7 @@ import {
   createUpdatedCartWithProduct,
   getMaxApplicableDiscountRate,
 } from '../../refactoring/models/cart';
-import * as useLocalStorageModule from '../../refactoring/hooks/useLocalStorage';
+import useLocalStorage, * as useLocalStorageModule from '../../refactoring/hooks/useLocalStorage';
 import { useCoupons } from '../../refactoring/hooks';
 
 const mockProducts: Product[] = [
@@ -360,16 +360,11 @@ describe('advanced > ', () => {
       });
     });
 
-    vi.mock('../../refactoring/hooks/useLocalStorage', () => ({
-      default: vi.fn(),
-    }));
-
-    vi.mock('../../refactoring/hooks/useLocalStorage', () => ({
-      __esModule: true,
-      default: vi.fn(),
-    }));
-
     describe('useCoupons 테스트', () => {
+      vi.mock('../../refactoring/hooks/useLocalStorage', () => ({
+        __esModule: true,
+        default: vi.fn(),
+      }));
       const mockCoupons = [
         {
           name: '5000원 할인 쿠폰',
@@ -429,6 +424,82 @@ describe('advanced > ', () => {
         const updatedCoupons = updaterFunction(mockCoupons);
         expect(updatedCoupons).toHaveLength(3);
         expect(updatedCoupons[2]).toEqual(newCoupon);
+      });
+    });
+
+    const localStorageMock = (() => {
+      let store: Record<string, string> = {};
+
+      return {
+        getItem: vi.fn((key: string) => store[key] || null),
+        setItem: vi.fn((key: string, value: string) => {
+          store[key] = value;
+        }),
+        clear: vi.fn(() => {
+          store = {};
+        }),
+        removeItem: vi.fn((key: string) => {
+          delete store[key];
+        }),
+        key: vi.fn((index: number) => Object.keys(store)[index] || null),
+        length: 0,
+      };
+    })();
+
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    describe('useLocalStorage 훅 테스트', () => {
+      const testKey = 'uniqueTestKey_123';
+      const initialValue = { name: 'test', value: 123 };
+
+      let mockStorage: Record<string, string> = {};
+
+      // localStorage 모킹 설정
+      beforeEach(() => {
+        // 테스트 전에 저장소를 초기화
+        mockStorage = {};
+
+        // getItem과 setItem 재정의
+        const mockLocalStorage = {
+          getItem: vi.fn((key: string) => mockStorage[key] || null),
+          setItem: vi.fn((key: string, value: string) => {
+            mockStorage[key] = value;
+          }),
+          clear: vi.fn(() => {
+            mockStorage = {};
+          }),
+          removeItem: vi.fn((key: string) => {
+            delete mockStorage[key];
+          }),
+          key: vi.fn((index: number) => Object.keys(mockStorage)[index] || null),
+          length: 0,
+        };
+
+        // 테스트 전 window.localStorage 완전히 대체
+        Object.defineProperty(window, 'localStorage', {
+          value: mockLocalStorage,
+          writable: true,
+        });
+
+        // 다른 모의 객체들도 초기화
+        vi.clearAllMocks();
+      });
+
+      test('초기값이 로컬 스토리지에 없을 때 초기값을 사용해야 함', () => {
+        // 추가 확인: localStorage가 비어있는지
+        expect(window.localStorage.getItem(testKey)).toBeNull();
+
+        // 훅 렌더링
+        const { result } = renderHook(() => useLocalStorage(testKey, initialValue));
+
+        // 초기값이 올바르게 설정되었는지 확인
+        expect(result.current[0]).toEqual(initialValue);
+
+        // localStorage.getItem이 올바른 키로 호출되었는지 확인
+        expect(window.localStorage.getItem).toHaveBeenCalledWith(testKey);
       });
     });
   });
