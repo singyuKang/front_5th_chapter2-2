@@ -7,6 +7,7 @@ import { CartItem, Coupon, Product } from '../../types';
 import {
   caculateMaxDiscount,
   calculateRemainingStock,
+  createUpdatedCartWithProduct,
   getMaxApplicableDiscountRate,
 } from '../../refactoring/models/cart';
 
@@ -306,6 +307,53 @@ describe('advanced > ', () => {
 
         test('할인이 없는 경우 0을 반환해야 함', () => {
           expect(getMaxApplicableDiscountRate([], 5)).toBe(0);
+        });
+      });
+
+      describe('createUpdatedCartWithProduct 테스트', () => {
+        test('장바구니에 새 상품을 추가해야 함', () => {
+          const updatedCart = createUpdatedCartWithProduct(mockCart, mockProduct2);
+
+          // 장바구니 길이가 2가 되어야 함 (기존 1개 + 새로 추가된 1개)
+          expect(updatedCart.length).toBe(2);
+
+          // 새로 추가된 상품이 있는지 확인
+          const newItem = updatedCart.find((item) => item.product.id === mockProduct2.id);
+          expect(newItem).toBeDefined();
+          expect(newItem?.quantity).toBe(1);
+
+          // 기존 상품이 그대로 있는지 확인
+          const existingItem = updatedCart.find((item) => item.product.id === mockProduct1.id);
+          expect(existingItem).toBeDefined();
+          expect(existingItem?.quantity).toBe(2);
+        });
+
+        test('이미 있는 상품의 경우 수량을 증가시켜야 함', () => {
+          const updatedCart = createUpdatedCartWithProduct(mockCart, mockProduct1);
+
+          // 장바구니 길이는 그대로 1이어야 함 (새 항목이 추가되지 않고 기존 항목 업데이트)
+          expect(updatedCart.length).toBe(1);
+
+          // 기존 상품의 수량이 증가했는지 확인 (2에서 3으로)
+          const updatedItem = updatedCart.find((item) => item.product.id === mockProduct1.id);
+          expect(updatedItem).toBeDefined();
+          expect(updatedItem?.quantity).toBe(3);
+        });
+
+        test('재고 이상으로 수량이 증가하지 않아야 함', () => {
+          // 초기 장바구니에 이미 재고(5개) 근접한 수량(4개)이 담겨있는 경우
+          const initialCart: CartItem[] = [{ product: mockProduct1, quantity: 4 }];
+
+          const updatedCart = createUpdatedCartWithProduct(initialCart, mockProduct1);
+
+          // 수량이 재고 한도(5개)를 넘지 않아야 함
+          const updatedItem = updatedCart.find((item) => item.product.id === mockProduct1.id);
+          expect(updatedItem?.quantity).toBe(5);
+
+          // 다시 한번 더 추가해도 재고 한도(5개)를 넘지 않아야 함
+          const finalCart = createUpdatedCartWithProduct(updatedCart, mockProduct1);
+          const finalItem = finalCart.find((item) => item.product.id === mockProduct1.id);
+          expect(finalItem?.quantity).toBe(5);
         });
       });
     });
