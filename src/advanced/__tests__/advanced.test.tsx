@@ -4,7 +4,11 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { CartPage } from '../../refactoring/pages/CartPage';
 import { AdminPage } from '../../refactoring/pages/AdminPage';
 import { CartItem, Coupon, Product } from '../../types';
-import { caculateMaxDiscount, calculateRemainingStock } from '../../refactoring/models/cart';
+import {
+  caculateMaxDiscount,
+  calculateRemainingStock,
+  getMaxApplicableDiscountRate,
+} from '../../refactoring/models/cart';
 
 const mockProducts: Product[] = [
   {
@@ -281,6 +285,27 @@ describe('advanced > ', () => {
         test('빈 장바구니가 전달되면 전체 재고를 반환해야 함', () => {
           const result = calculateRemainingStock(mockProduct1, []);
           expect(result).toBe(5);
+        });
+      });
+
+      describe('getMaxApplicableDiscountRate 테스트', () => {
+        test('구매 수량에 해당하는 최대 할인율을 반환해야 함', () => {
+          // 2개 구매 시 10% 할인 적용
+          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 2)).toBe(0.1);
+
+          // 3개 구매 시 20% 할인 적용
+          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 3)).toBe(0.2);
+
+          // 4개 구매 시 여전히 최대 할인인 20% 적용
+          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 4)).toBe(0.2);
+        });
+
+        test('구매 수량이 최소 할인 기준에 못 미치면 0을 반환해야 함', () => {
+          expect(getMaxApplicableDiscountRate(mockProduct1.discounts, 1)).toBe(0);
+        });
+
+        test('할인이 없는 경우 0을 반환해야 함', () => {
+          expect(getMaxApplicableDiscountRate([], 5)).toBe(0);
         });
       });
     });
