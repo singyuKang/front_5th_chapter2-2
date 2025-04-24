@@ -3,7 +3,8 @@ import { describe, expect, test } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { CartPage } from '../../refactoring/pages/CartPage';
 import { AdminPage } from '../../refactoring/pages/AdminPage';
-import { Coupon, Product } from '../../types';
+import { CartItem, Coupon, Product } from '../../types';
+import { caculateMaxDiscount, calculateRemainingStock } from '../../refactoring/models/cart';
 
 const mockProducts: Product[] = [
   {
@@ -229,8 +230,29 @@ describe('advanced > ', () => {
   });
 
   describe('자유롭게 작성해보세요.', () => {
-    test('새로운 유틸 함수를 만든 후에 테스트 코드를 작성해서 실행해보세요', () => {
-      expect(true).toBe(false);
+    test('cart.ts 유틸함수 테스트', () => {
+      const mockProduct1: Product = {
+        id: 'prod-1',
+        name: '테스트 상품',
+        price: 10000,
+        stock: 5,
+        discounts: [
+          { quantity: 2, rate: 0.1 }, // 2개 이상 구매 시 10% 할인
+          { quantity: 3, rate: 0.2 }, // 3개 이상 구매 시 20% 할인
+        ],
+      };
+
+      describe('caculateMaxDiscount 테스트', () => {
+        test('최대 할인율을 올바르게 계산해야 함', () => {
+          const result = caculateMaxDiscount(mockProduct1.discounts);
+          expect(result).toBe(0.2); // 가장 큰 할인율인 20%를 반환해야 함
+        });
+
+        test('할인이 없는 경우 0을 반환해야 함', () => {
+          const result = caculateMaxDiscount([]);
+          expect(result).toBe(0);
+        });
+      });
     });
 
     test('새로운 hook 함수르 만든 후에 테스트 코드를 작성해서 실행해보세요', () => {
