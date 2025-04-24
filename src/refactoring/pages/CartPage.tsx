@@ -1,4 +1,4 @@
-import { CartItem, Coupon, Product } from '../../types.ts';
+import { Coupon, Product } from '../../types.ts';
 import Heading from '../components/common/Heading.tsx';
 import CartList from '../components/domain/cart/CartList.tsx';
 import CouponSelector from '../components/domain/cart/CouponSelector.tsx';
