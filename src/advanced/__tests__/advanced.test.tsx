@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { describe, expect, test, beforeEach, afterEach } from 'vitest';
+import { describe, expect, test, beforeEach, afterEach, it } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { CartPage } from '../../refactoring/pages/CartPage';
 import { AdminPage } from '../../refactoring/pages/AdminPage';
-import { Coupon, Product } from '../../types';
+import { Coupon, Discount, Product } from '../../types';
+import { validateDiscount } from '../../refactoring/models/discount';
 
 const mockProducts: Product[] = [
   {
@@ -233,6 +234,32 @@ describe('advanced > ', () => {
       const $newCoupon = screen.getByTestId('coupon-3');
 
       expect($newCoupon).toHaveTextContent('새 쿠폰 (NEW10):10% 할인');
+    });
+  });
+
+  describe('validateDiscount 테스트', () => {
+    it('갯수 할인률 0 초과', () => {
+      const validDiscount: Discount = { quantity: 5, rate: 10 };
+
+      const result = validateDiscount(validDiscount);
+
+      expect(result).toBe(true);
+    });
+
+    it('갯수 0이 들어간경우', () => {
+      const invalidDiscount: Discount = { quantity: 0, rate: 10 };
+
+      const result = validateDiscount(invalidDiscount);
+
+      expect(result).toBe(false);
+    });
+
+    it('할인률 0인경우', () => {
+      const invalidDiscount: Discount = { quantity: 5, rate: 0 };
+
+      const result = validateDiscount(invalidDiscount);
+
+      expect(result).toBe(false);
     });
   });
 });
