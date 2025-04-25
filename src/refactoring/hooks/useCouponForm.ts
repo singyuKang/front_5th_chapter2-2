@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Coupon } from '../../types';
+import { validateCoupon } from '../models/coupon';
 
 type UseCouponFormProps = {
   onAddCoupon: (coupon: Coupon) => void;
@@ -31,8 +32,7 @@ export function useCouponForm({ onAddCoupon }: UseCouponFormProps) {
   };
 
   const handleAddCoupon = () => {
-    // 유효성 검사
-    if (!validateForm()) {
+    if (!validateCoupon(newCoupon)) {
       return;
     }
 
@@ -43,27 +43,6 @@ export function useCouponForm({ onAddCoupon }: UseCouponFormProps) {
       discountType: 'percentage',
       discountValue: 0,
     });
-  };
-
-  const validateForm = (): boolean => {
-    let isValid = true;
-
-    // 쿠폰 이름 검증
-    if (!newCoupon.name.trim()) {
-      isValid = false;
-    }
-
-    // 쿠폰 코드 검증
-    if (!newCoupon.code.trim()) {
-      isValid = false;
-    }
-
-    // 할인 값 검증
-    if (newCoupon.discountValue <= 0) {
-      isValid = false;
-    }
-
-    return isValid;
   };
 
   return {

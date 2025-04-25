@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Product } from '../../types';
+import { validateProduct } from '../models/product';
 
 type UseProductFormProps = {
   onProductAdd: (product: Product) => void;
@@ -20,7 +21,7 @@ export function useProductForm({ onProductAdd }: UseProductFormProps) {
   };
 
   const handleAddNewProduct = () => {
-    if (!validateForm()) {
+    if (!validateProduct(newProduct)) {
       return;
     }
 
@@ -34,27 +35,6 @@ export function useProductForm({ onProductAdd }: UseProductFormProps) {
     });
     setShowNewProductForm(false);
     return productWithId;
-  };
-
-  const validateForm = (): boolean => {
-    let isValid = true;
-
-    // 상품명
-    if (!newProduct.name.trim()) {
-      isValid = false;
-    }
-
-    // 상품가격
-    if (newProduct.price <= 0) {
-      isValid = false;
-    }
-
-    // 상품 갯수
-    if (newProduct.stock <= 0) {
-      isValid = false;
-    }
-
-    return isValid;
   };
 
   return {

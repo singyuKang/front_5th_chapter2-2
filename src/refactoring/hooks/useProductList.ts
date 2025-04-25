@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Discount, Product } from '../../types';
+import { validateDiscount } from '../models/discount';
 
 type UseProductListProps = {
   products: Product[];
@@ -50,7 +51,7 @@ export function useProductList({ products, onProductUpdate }: UseProductListProp
   };
 
   const handleAddDiscount = (productId: string) => {
-    if (!validateForm(newDiscount)) {
+    if (!validateDiscount(newDiscount)) {
       return;
     }
 
@@ -63,20 +64,6 @@ export function useProductList({ products, onProductUpdate }: UseProductListProp
       setEditingProduct(updatedProduct);
       setNewDiscount({ quantity: 0, rate: 0 });
     }
-  };
-
-  const validateForm = (newDiscount: Discount): boolean => {
-    let isValid = true;
-
-    if (newDiscount.quantity <= 0) {
-      isValid = false;
-    }
-
-    if (newDiscount.rate <= 0) {
-      isValid = false;
-    }
-
-    return isValid;
   };
 
   const handleRemoveDiscount = (productId: string, index: number) => {
