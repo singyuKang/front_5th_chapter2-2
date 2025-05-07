@@ -1,6 +1,7 @@
 ## 배포링크
 
 origin : https://singyukang.github.io/front_5th_chapter2-2/index.origin.html
+
 refactoring : https://singyukang.github.io/front_5th_chapter2-2/index.refactoring.html
 
 ## 과제의 핵심취지
